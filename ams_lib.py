@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-'''
+"""
 A library for reading and manipulating AMS data from AGICO instruments.
-'''
+"""
 
 from pyx import canvas, path
 from math import sqrt, fabs, cos, sin, radians, atan2, degrees
@@ -10,18 +10,22 @@ import struct
 from numpy import argsort
 from numpy.linalg import eigh
 
-header_format = '<H16s7s7s4s4s4s4s3s3s3s3s4s'
-format = '<12s8f2s4h2s4h'
+header_format = "<H16s7s7s4s4s4s4s3s3s3s3s4s"
+format = "<12s8f2s4h2s4h"
 
 class Direction:
-
-    def __init__(self, dec, inc):
-        dr = radians(dec)
-        ir = radians(inc)
-        (self.x, self.y, self.z) = (cos(ir) * cos(dr), cos(ir) * sin(dr), sin(ir))
+    "A direction in three-dimensional space"
 
     def __init__(self, (x, y, z)):
         self.x, self.y, self.z = x, y, z
+
+    @classmethod
+    def from_polar_degrees(self, dec, inc):
+        dr = radians(dec)
+        ir = radians(inc)
+        return Direction((cos(ir) * cos(dr),
+                         cos(ir) * sin(dr),
+                         sin(ir)))
 
     def project(self, scale=10):
         x, y, z = self.x, self.y, self.z
@@ -54,14 +58,15 @@ class PrincipalDirs:
     def __init__(self, p1, p2, p3):
         self.p1, self.p2, self.p3 = p1, p2, p3
 
-    def __init__(self, (k11, k22, k33, k12, k23, k13)):
+    @classmethod
+    def from_tensor(self, (k11, k22, k33, k12, k23, k13)):
         matrix = [[k11, k12, k13], [k12, k22, k23], [k13, k23, k33]]
         vals, vecs = eigh(matrix)
         perm = argsort(-vals)
-        sorted = vecs[:, perm]
-        self.p1 = Direction(sorted[:, 0])
-        self.p2 = Direction(sorted[:, 1])
-        self.p3 = Direction(sorted[:, 2])
+        sorted_vecs = vecs[:, perm]
+        return PrincipalDirs(Direction(sorted_vecs[:, 0]),
+                             Direction(sorted_vecs[:, 1]),
+                             Direction(sorted_vecs[:, 2]))
 
     def plot(self, c, other=None):
         self.p1.plot(c, 's')
@@ -88,7 +93,7 @@ def read_ran(filename):
         #   0         1     2    3    4    5    6    7    8
         # (id, mean_sus, norm, k11, k22, k33, k12, k23, k13,
         #  c1, fol11, fol12, lin11, lin12, c2, fol21, fol22, lin21, lin22)
-        result[name] = PrincipalDirs(f[3:9])
+        result[name] = PrincipalDirs.from_tensor(f[3:9])
     file.close()
     return result
 
@@ -104,7 +109,7 @@ def read_asc(filename):
             k12 = float(parts[5])
             k23 = float(parts[6])
             k13 = float(parts[7])
-            result[name] = PrincipalDirs((k11, k22, k33, k12, k23, k13))
+            result[name] = PrincipalDirs.from_tensor((k11, k22, k33, k12, k23, k13))
         if (len(parts) > 0 and parts[0] == "Geograph"):
             got_one = True
             k11 = float(parts[5])
