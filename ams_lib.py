@@ -11,7 +11,7 @@ from numpy import argsort
 from numpy.linalg import eigh
 
 header_format = "<H16s7s7s4s4s4s4s3s3s3s3s4s"
-format = "<12s8f2s4h2s4h"
+data_format = "<12s8f2s4h2s4h"
 
 class Direction:
     "A direction in three-dimensional space"
@@ -87,7 +87,7 @@ def read_ran(filename):
     num_recs = headers[0]-2
     for i in range(0, num_recs) :
         record = file.read(64)
-        f = struct.unpack(format, record)
+        f = struct.unpack(data_format, record)
         name = f[0].rstrip()
         # name = name[0:-1] + '.' + name[-1:]
         #   0         1     2    3    4    5    6    7    8
