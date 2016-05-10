@@ -9,6 +9,7 @@ from math import sqrt, fabs, cos, sin, radians, atan2, degrees
 import struct
 from numpy import argsort
 from numpy.linalg import eigh
+from collections import OrderedDict
 
 header_format = "<H16s7s7s4s4s4s4s3s3s3s3s4s"
 data_format = "<12s8f2s4h2s4h"
@@ -55,18 +56,21 @@ class Direction:
 
 class PrincipalDirs:
 
-    def __init__(self, p1, p2, p3):
+    def __init__(self, p1, p2, p3, tensor = None):
         self.p1, self.p2, self.p3 = p1, p2, p3
+        self.tensor = tensor
 
     @classmethod
-    def from_tensor(self, (k11, k22, k33, k12, k23, k13)):
+    def from_tensor(self, tensor):
+        (k11, k22, k33, k12, k23, k13) = tensor
         matrix = [[k11, k12, k13], [k12, k22, k23], [k13, k23, k33]]
         vals, vecs = eigh(matrix)
         perm = argsort(-vals)
         sorted_vecs = vecs[:, perm]
         return PrincipalDirs(Direction(sorted_vecs[:, 0]),
                              Direction(sorted_vecs[:, 1]),
-                             Direction(sorted_vecs[:, 2]))
+                             Direction(sorted_vecs[:, 2]),
+                             tensor = tensor)
 
     def plot(self, c, other=None):
         self.p1.plot(c, 's')
@@ -80,16 +84,15 @@ class PrincipalDirs:
             c.stroke(path.line(v1[0], v1[1], a, b))
 
 def read_ran(filename):
-    result = {}
+    result = OrderedDict()
     file = open(filename, mode='rb')
     header = file.read(64)
     headers = struct.unpack(header_format, header)
     num_recs = headers[0]-2
-    for i in range(0, num_recs) :
+    for i in range(0, num_recs):
         record = file.read(64)
         f = struct.unpack(data_format, record)
         name = f[0].rstrip()
-        # name = name[0:-1] + '.' + name[-1:]
         #   0         1     2    3    4    5    6    7    8
         # (id, mean_sus, norm, k11, k22, k33, k12, k23, k13,
         #  c1, fol11, fol12, lin11, lin12, c2, fol21, fol22, lin21, lin22)
@@ -98,7 +101,7 @@ def read_ran(filename):
     return result
 
 def read_asc(filename):
-    result = {}
+    result = OrderedDict()
     got_one = False
     file = open(filename, 'r')
     for line in file.readlines():
