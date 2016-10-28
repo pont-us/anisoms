@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 """ Convert AMS tensors to principal directions
 
@@ -17,4 +17,4 @@ from ams_lib import PrincipalDirs
 for line in fileinput.input():
     ks = map(float, line.split())
     ds = PrincipalDirs.from_tensor(ks)
-    print ds.p1.to_decinc()
+    print(ds.p1.to_decinc())

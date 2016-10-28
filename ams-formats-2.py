@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 """
 A program to produce comparative plots of AMS data from RAN and ASC
@@ -15,6 +15,7 @@ def main():
     ran = read_ran(filename+'.RAN')
     asc = read_asc(filename+'.ASC')
 
+    print(ran)
     c = canvas.canvas()
     c.stroke(path.circle(0, 0, 10))
     for v in ran.values(): v.plot(c)

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 """
 A library for reading and manipulating AMS data from AGICO instruments.
@@ -17,8 +17,8 @@ data_format = "<12s8f2s4h2s4h"
 class Direction:
     "A direction in three-dimensional space"
 
-    def __init__(self, (x, y, z)):
-        self.x, self.y, self.z = x, y, z
+    def __init__(self, components):
+        self.x, self.y, self.z = components
 
     @classmethod
     def from_polar_degrees(cls, dec, inc):
@@ -81,7 +81,7 @@ class PrincipalDirs:
         perm = argsort(-vals)
         sorted_vecs = vecs[:, perm]
         dirs = [Direction.make_lower_hemisphere(*sorted_vecs[:, i])
-                for i in 0, 1, 2]
+                for i in (0, 1, 2)]
         return PrincipalDirs(dirs[0], dirs[1], dirs[2],
                              tensor = tensor)
 
@@ -104,7 +104,7 @@ def read_ran(filename):
     for i in range(0, num_recs):
         record = file.read(64)
         f = struct.unpack(data_format, record)
-        name = f[0].rstrip()
+        name = f[0].rstrip().decode()
         #   0         1     2    3    4    5    6    7    8
         # (id, mean_sus, norm, k11, k22, k33, k12, k23, k13,
         #  c1, fol11, fol12, lin11, lin12, c2, fol21, fol22, lin21, lin22)

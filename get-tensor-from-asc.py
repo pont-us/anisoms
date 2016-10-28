@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import fileinput
 from optparse import OptionParser
@@ -53,7 +53,7 @@ for line in in_stream:
             more_fields = (s_az, s_dip, opt.formaz, opt.formdip, opt.magdec)
             fields += more_fields
         if opt.params: fields = (name, Pj, T)
-        print ' '.join(map(str, fields))
+        print(' '.join(map(str, fields)))
     if (len(parts) > 0 and parts[0] == tensor_label):
         got_one = True
         k11 = float(parts[5])

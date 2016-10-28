@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys, re
 from math import log, sqrt, exp
@@ -72,8 +72,8 @@ while (i < len(lines)-1):
         rows.append(row)
 
 outstream = open(outfile, 'w')
-outstream.write(','.join(zip(*locations)[2]) + ',P\'a' + '\n')
+outstream.write(','.join(list(zip(*locations))[2]) + ',P\'a' + '\n')
 for row in rows:
     outstream.write(','.join(row)+'\n')
 outstream.close()
-print total, valid
+print(total, valid)

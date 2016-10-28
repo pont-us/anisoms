@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 from pyx import canvas, path
 from ams_lib import PrincipalDirs, Direction
