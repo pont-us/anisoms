@@ -21,12 +21,17 @@ class Direction:
         self.x, self.y, self.z = x, y, z
 
     @classmethod
-    def from_polar_degrees(self, dec, inc):
+    def from_polar_degrees(cls, dec, inc):
         dr = radians(dec)
         ir = radians(inc)
         return Direction((cos(ir) * cos(dr),
                          cos(ir) * sin(dr),
                          sin(ir)))
+
+    @classmethod
+    def make_lower_hemisphere(cls, x, y, z):
+        if z<0: x, y, z = -x, -y, -z
+        return Direction((x, y, z))
 
     def project(self, scale=10):
         x, y, z = self.x, self.y, self.z
@@ -56,20 +61,27 @@ class Direction:
 
 class PrincipalDirs:
 
+    "A set of three principal directions"
+
     def __init__(self, p1, p2, p3, tensor = None):
         self.p1, self.p2, self.p3 = p1, p2, p3
         self.tensor = tensor
 
     @classmethod
-    def from_tensor(self, tensor):
+    def from_tensor(cls, tensor):
+        """Make principal directions from a tensor.
+
+        Any upward pointing directions are flipped, so all resulting
+        directions are in the lower hemisphere.
+        """
         (k11, k22, k33, k12, k23, k13) = tensor
         matrix = [[k11, k12, k13], [k12, k22, k23], [k13, k23, k33]]
         vals, vecs = eigh(matrix)
         perm = argsort(-vals)
         sorted_vecs = vecs[:, perm]
-        return PrincipalDirs(Direction(sorted_vecs[:, 0]),
-                             Direction(sorted_vecs[:, 1]),
-                             Direction(sorted_vecs[:, 2]),
+        dirs = [Direction.make_lower_hemisphere(*sorted_vecs[:, i])
+                for i in 0, 1, 2]
+        return PrincipalDirs(dirs[0], dirs[1], dirs[2],
                              tensor = tensor)
 
     def plot(self, c, other=None):
