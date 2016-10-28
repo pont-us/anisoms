@@ -43,14 +43,15 @@ class Direction:
     def plot(self, c, shape = 's'):
         (x, y) = self.project()
         if shape == 's':
-            c.fill(path.rect(x-0.1, y-0.1, 0.2, 0.2))
+            c.stroke(path.rect(x-0.1, y-0.1, 0.2, 0.2))
         elif shape == 't':
-            c.fill(path.path(path.moveto(x, y),
-                             path.rmoveto(0,0.1),
-                             path.rlineto(-0.11547, -0.2),
-                             path.rlineto(0.23094, 0)))
+            s=0.15
+            c.stroke(path.path(path.moveto(x, y+s),
+                               path.rlineto(-0.866*s, -1.5*s),
+                               path.rlineto(2*.866*s, 0),
+                               path.lineto(x, y+s)))
         elif shape == 'c':
-            c.fill(path.circle(x, y, 0.1))
+            c.stroke(path.circle(x, y, 0.1))
 
     def to_decinc(self):
         x,y,z, = self.x, self.y, self.z
@@ -89,11 +90,10 @@ class PrincipalDirs:
         self.p2.plot(c, 't')
         self.p3.plot(c, 'c')
         if (other != None):
-            v1 = self.p1.project()
-            w = other.p1.project()
-            a = w[0]
-            b = w[1]
-            c.stroke(path.line(v1[0], v1[1], a, b))
+            for p in "p1", "p2", "p3":
+                v1 = getattr(self, p).project()
+                v2 = getattr(other, p).project()
+                c.stroke(path.line(v1[0], v1[1], v2[0], v2[1]))
 
 def read_ran(filename):
     result = OrderedDict()
