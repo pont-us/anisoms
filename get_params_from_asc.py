@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-from __future__ import print_function
 import argparse
 import re
 
@@ -101,7 +100,7 @@ def main():
     parser.add_argument('--param', "-p", metavar = "parameter-name",
                         type = str, default="magsus",
                         choices = ["magsus", "incdec", "tensor", "pj", "t"],
-                        help = "Parameter to extract "
+                        help = "Parameter to extract"
                         "(magsus, incdec, pj, t, or tensor)")
     parser.add_argument('--system', "-s", metavar = "coordinate-system",
                         type = str, default="specimen",
