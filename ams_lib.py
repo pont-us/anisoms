@@ -136,7 +136,7 @@ class AgicoDirData:
     pass
 
 def read_asc_new(filename):
-    results = []
+    results = OrderedDict()
 
     with open(filename, "r") as fh:
         lines_raw = fh.readlines()
@@ -152,8 +152,9 @@ def read_asc_new(filename):
         fields = fieldss[i]
         if re.search("ANISOTROPY OF SUSCEPTIBILITY", line):
             s = {}
-            results.append(s)
-            s["name"] = fields[0]
+            name = fields[0]
+            results[name] = s
+            s["name"] = name
             s["program"] = re.search(r"SUSCEPTIBILITY +(.*)$", line).group(1)
         elif re.search("^Azi  ", line):
             s["azimuth"] = fields[1]
@@ -204,9 +205,14 @@ def read_asc_new(filename):
             if "vector_data" not in s:
                 s["vector_data"] = {}
             vector_data = {}
-            coord_system = fields[0]
+            coord_system = line[:8].rstrip()
             s["vector_data"][coord_system] = vector_data
-            d1, d2, d3, k11, k22, k33 = fields[2:]
+            # If the co-ordinate system string contains a space,
+            # it will have been split into two fields, so all
+            # subsequent fields will be offset by one.
+            field_offset = 0
+            if " " in coord_system: field_offset = 1
+            d1, d2, d3, k11, k22, k33 = fields[(2 + field_offset):]
             i1, i2, i3, k12, k23, k13 = fieldss[i+1][2:]
             vector_data["directions"] = [(d1, i1), (d2, i2), (d3, i3)]
             vector_data["tensor"] = [k11, k22, k33, k12, k23, k13]
