@@ -132,9 +132,6 @@ def read_asc(filename):
                 k33 = float(parts[7])
     return result
 
-class AgicoAscData:
-    pass
-
 class AgicoDirData:
     pass
 
@@ -154,27 +151,27 @@ def read_asc_new(filename):
         line = lines[i]
         fields = fieldss[i]
         if re.search("ANISOTROPY OF SUSCEPTIBILITY", line):
-            s = AgicoAscData()
+            s = {}
             results.append(s)
-            s.name = fields[0]
-            s.program = re.search(r"SUSCEPTIBILITY +(.*)$", line).group(1)
+            s["name"] = fields[0]
+            s["program"] = re.search(r"SUSCEPTIBILITY +(.*)$", line).group(1)
         elif re.search("^Azi  ", line):
-            s.azimuth = fields[1]
-            s.orientation_parameters = fields[4:8]
-            s.nominal_volume = fields[10]
+            s["azimuth"] = fields[1]
+            s["orientation_parameters"] = fields[4:8]
+            s["nominal_volume"] = fields[10]
         elif re.search("^Dip  ", line):
-            s.dip = fields[1]
-            s.demagnetizing_factor_used = fields[5]
-            s.holder_susceptibility = fields[6]
-            s.actual_volume = fields[10]
+            s["dip"] = fields[1]
+            s["demagnetizing_factor_used"] = fields[5]
+            s["holder_susceptibility"] = fields[6]
+            s["actual_volume"] = fields[10]
         elif line == ("T1          F1          L1                "
                       "T2          F2          L2"):
-            s.T1, s.F1, s.L1, s.T2, s.F2, s.L2 = fieldss[i+1]
+            s["T1"], s["F1"], s["L1"], s["T2"], s["F2"], s["L2"] = fieldss[i+1]
             i += 1
         elif line == ("  Field         Mean      Standard              "
                       "Tests for anisotropy"):
-            s.field, s.frequency, s.mean_susceptibility, \
-                s.standard_error, s.F, s.F12, s.F23 = fieldss[i+2]
+            s["field"], s["frequency"], s["mean_susceptibility"], \
+                s["standard_error"], s["F"], s["F12"], s["F23"] = fieldss[i+2]
             i += 2
         elif line == ("          susceptibilities                   "
                       "Ax1        Ax2        Ax3"):
@@ -183,12 +180,12 @@ def read_asc_new(filename):
             # 15-position static specimen measurement).
 
             ps1, ps2, ps3, a95_1, a95_2, a95_3 = fieldss[i+1]
-            ps1e, ps2e, ps3e, a95_1e, a95_2e, a95_3e = fieldss[i+2]
+            ps1e, ps2e, ps3e, a95_1e, a95_2e, a95_3e = fieldss[i+2][1:]
 
-            s.principal_suscs = [ps1, ps2, ps3]
-            s.a95s = [a95_1, a95_2, a95_3]
-            s.principal_susc_errs = [ps1e, ps2e, ps3e]
-            s.a95_errs = [a95_1e, a95_2e, a95_3e]
+            s["principal_suscs"] = [ps1, ps2, ps3]
+            s["a95s"] = [a95_1, a95_2, a95_3]
+            s["principal_susc_errs"] = [ps1e, ps2e, ps3e]
+            s["a95_errs"] = [a95_1e, a95_2e, a95_3e]
 
             i += 2
 
@@ -201,23 +198,19 @@ def read_asc_new(filename):
 
         elif line == ("       L       F       P      'P           "
                       "T       U       Q       E"):
-            s.L, s.F, s.P, s.primeP, s.T, s.U, s.Q, s.E = fieldss[i+1]
+            s["L"], s["F"], s["P"], s["primeP"], s["T"], s["U"], s["Q"], s["E"] = fieldss[i+1]
             i += 1
         elif re.match("(Specimen|Geograph|(Pale|Tect)o [12] )  D    ", line):
-            if not hasattr(s, "dir_data"):
-                s.dir_data = {}
-            dir_data = AgicoDirData()
-            s.dir_data[fields[0]] = dir_data
+            if "vector_data" not in s:
+                s["vector_data"] = {}
+            vector_data = {}
+            coord_system = fields[0]
+            s["vector_data"][coord_system] = vector_data
             d1, d2, d3, k11, k22, k33 = fields[2:]
             i1, i2, i3, k12, k23, k13 = fieldss[i+1][2:]
-            dir_data.directions = [(d1, i1), (d2, i2), (d3, i3)]
-            dir_data.tensor = [k11, k22, k33, k12, k23, k13]
+            vector_data["directions"] = [(d1, i1), (d2, i2), (d3, i3)]
+            vector_data["tensor"] = [k11, k22, k33, k12, k23, k13]
             i += 1
         i += 1
 
     return results
-
-    for r in results:
-        print(r.name)
-
-        
