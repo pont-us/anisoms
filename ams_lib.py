@@ -163,7 +163,14 @@ def read_asc(filename):
             i += 1
         elif line == ("  Field         Mean      Standard              "
                       "Tests for anisotropy"):
+            # Only present in SAFYR files
             s["field"], s["frequency"], s["mean_susceptibility"], \
+                s["standard_error"], s["F"], s["F12"], s["F23"] = fieldss[i+2]
+            i += 2
+        elif line == ("  Mean         Norming    Standard              "
+                      "Tests for anisotropy"):
+            # Only present in SUSAR files
+            s["mean_susceptibility"], s["norming_factor"], \
                 s["standard_error"], s["F"], s["F12"], s["F23"] = fieldss[i+2]
             i += 2
         elif line == ("          susceptibilities                   "
@@ -209,6 +216,8 @@ def read_asc(filename):
             vector_data["directions"] = [(d1, i1), (d2, i2), (d3, i3)]
             vector_data["tensor"] = [k11, k22, k33, k12, k23, k13]
             i += 1
+        elif re.match(r"\d\d-\d\d-\d\d\d\d$", line):
+            s["date"] = line
         i += 1
 
     return results
