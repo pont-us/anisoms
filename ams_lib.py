@@ -10,6 +10,7 @@ import struct
 from numpy import argsort
 from numpy.linalg import eigh
 from collections import OrderedDict
+import re
 
 header_format = "<H16s7s7s4s4s4s4s3s3s3s3s4s"
 data_format = "<12s8f2s4h2s4h"
@@ -97,38 +98,126 @@ class PrincipalDirs:
 
 def read_ran(filename):
     result = OrderedDict()
-    file = open(filename, mode='rb')
-    header = file.read(64)
-    headers = struct.unpack(header_format, header)
-    num_recs = headers[0]-2
-    for i in range(0, num_recs):
-        record = file.read(64)
-        f = struct.unpack(data_format, record)
-        name = f[0].rstrip().decode()
-        #   0         1     2    3    4    5    6    7    8
-        # (id, mean_sus, norm, k11, k22, k33, k12, k23, k13,
-        #  c1, fol11, fol12, lin11, lin12, c2, fol21, fol22, lin21, lin22)
-        result[name] = PrincipalDirs.from_tensor(f[3:9])
-    file.close()
+    with open(filename, mode='rb') as fh:
+        header = fh.read(64)
+        headers = struct.unpack(header_format, header)
+        num_recs = headers[0]-2
+        for i in range(0, num_recs):
+            record = fh.read(64)
+            f = struct.unpack(data_format, record)
+            name = f[0].rstrip().decode()
+            #   0         1     2    3    4    5    6    7    8
+            # (id, mean_sus, norm, k11, k22, k33, k12, k23, k13,
+            #  c1, fol11, fol12, lin11, lin12, c2, fol21, fol22, lin21, lin22)
+            result[name] = PrincipalDirs.from_tensor(f[3:9])
     return result
 
 def read_asc(filename):
     result = OrderedDict()
     got_one = False
-    file = open(filename, 'r')
-    for line in file.readlines():
-        parts = line.split()
-        if len(parts)>5 and parts[5]=="SAFYR": name = parts[0]
-        if (got_one):
-            got_one = False
-            k12 = float(parts[5])
-            k23 = float(parts[6])
-            k13 = float(parts[7])
-            result[name] = PrincipalDirs.from_tensor((k11, k22, k33, k12, k23, k13))
-        if (len(parts) > 0 and parts[0] == "Geograph"):
-            got_one = True
-            k11 = float(parts[5])
-            k22 = float(parts[6])
-            k33 = float(parts[7])
-    file.close()
+    with open(filename, 'r') as fh:
+        for line in fh.readlines():
+            parts = line.split()
+            if len(parts)>5 and parts[5]=="SAFYR": name = parts[0]
+            if (got_one):
+                got_one = False
+                k12 = float(parts[5])
+                k23 = float(parts[6])
+                k13 = float(parts[7])
+                result[name] = PrincipalDirs.from_tensor((k11, k22, k33, k12, k23, k13))
+            if (len(parts) > 0 and parts[0] == "Geograph"):
+                got_one = True
+                k11 = float(parts[5])
+                k22 = float(parts[6])
+                k33 = float(parts[7])
     return result
+
+class AgicoAscData:
+    pass
+
+class AgicoDirData:
+    pass
+
+def read_asc_new(filename):
+    results = []
+
+    with open(filename, "r") as fh:
+        lines_raw = fh.readlines()
+    
+    lines = [line.rstrip() for line in lines_raw if len(line)>1]
+
+    fieldss = [line.split() for line in lines]
+
+    i = 0
+    s = None
+    while i < len(lines):
+        line = lines[i]
+        fields = fieldss[i]
+        if re.search("ANISOTROPY OF SUSCEPTIBILITY", line):
+            s = AgicoAscData()
+            results.append(s)
+            s.name = fields[0]
+            s.program = re.search(r"SUSCEPTIBILITY +(.*)$", line).group(1)
+        elif re.search("^Azi  ", line):
+            s.azimuth = fields[1]
+            s.orientation_parameters = fields[4:8]
+            s.nominal_volume = fields[10]
+        elif re.search("^Dip  ", line):
+            s.dip = fields[1]
+            s.demagnetizing_factor_used = fields[5]
+            s.holder_susceptibility = fields[6]
+            s.actual_volume = fields[10]
+        elif line == ("T1          F1          L1                "
+                      "T2          F2          L2"):
+            s.T1, s.F1, s.L1, s.T2, s.F2, s.L2 = fieldss[i+1]
+            i += 1
+        elif line == ("  Field         Mean      Standard              "
+                      "Tests for anisotropy"):
+            s.field, s.frequency, s.mean_susceptibility, \
+                s.standard_error, s.F, s.F12, s.F23 = fieldss[i+2]
+            i += 2
+        elif line == ("          susceptibilities                   "
+                      "Ax1        Ax2        Ax3"):
+            # This line is only present if the sample was measured
+            # using the automatic sample rotator (as opposed to
+            # 15-position static specimen measurement).
+
+            ps1, ps2, ps3, a95_1, a95_2, a95_3 = fieldss[i+1]
+            ps1e, ps2e, ps3e, a95_1e, a95_2e, a95_3e = fieldss[i+2]
+
+            s.principal_suscs = [ps1, ps2, ps3]
+            s.a95s = [a95_1, a95_2, a95_3]
+            s.principal_susc_errs = [ps1e, ps2e, ps3e]
+            s.a95_errs = [a95_1e, a95_2e, a95_3e]
+
+            i += 2
+
+        elif line == ("          susceptibilities                   "
+                      "E12        E23        E13"):
+            # This line is only present if the sample was measured
+            # using 15-position static specimen measurement.
+
+            pass # Not handled yet
+
+        elif line == ("       L       F       P      'P           "
+                      "T       U       Q       E"):
+            s.L, s.F, s.P, s.primeP, s.T, s.U, s.Q, s.E = fieldss[i+1]
+            i += 1
+        elif re.match("(Specimen|Geograph|(Pale|Tect)o [12] )  D    ", line):
+            if not hasattr(s, "dir_data"):
+                s.dir_data = {}
+            dir_data = AgicoDirData()
+            s.dir_data[fields[0]] = dir_data
+            d1, d2, d3, k11, k22, k33 = fields[2:]
+            i1, i2, i3, k12, k23, k13 = fieldss[i+1][2:]
+            dir_data.directions = [(d1, i1), (d2, i2), (d3, i3)]
+            dir_data.tensor = [k11, k22, k33, k12, k23, k13]
+            i += 1
+        i += 1
+
+    return results
+
+    for r in results:
+        print(r.name)
+
+        
