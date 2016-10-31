@@ -96,7 +96,14 @@ class PrincipalDirs:
                 v2 = getattr(other, p).project()
                 c.stroke(path.line(v1[0], v1[1], v2[0], v2[1]))
 
-def read_ran(filename):
+    def to_decinc_string(self):
+        di1 = self.p1.to_decinc()
+        di2 = self.p2.to_decinc()
+        di3 = self.p3.to_decinc()
+        return "%3.3f %3.3f %3.3f %3.3f %3.3f %3.3f" % \
+        (di1[0], di1[1], di2[0], di2[1], di3[0], di3[1])
+
+def directions_from_ran(filename):
     result = OrderedDict()
     with open(filename, mode='rb') as fh:
         header = fh.read(64)
@@ -112,30 +119,15 @@ def read_ran(filename):
             result[name] = PrincipalDirs.from_tensor(f[3:9])
     return result
 
-def read_asc(filename):
+def directions_from_asc_tensors(filename):
+    asc_data = read_asc(filename)
     result = OrderedDict()
-    got_one = False
-    with open(filename, 'r') as fh:
-        for line in fh.readlines():
-            parts = line.split()
-            if len(parts)>5 and parts[5]=="SAFYR": name = parts[0]
-            if (got_one):
-                got_one = False
-                k12 = float(parts[5])
-                k23 = float(parts[6])
-                k13 = float(parts[7])
-                result[name] = PrincipalDirs.from_tensor((k11, k22, k33, k12, k23, k13))
-            if (len(parts) > 0 and parts[0] == "Geograph"):
-                got_one = True
-                k11 = float(parts[5])
-                k22 = float(parts[6])
-                k33 = float(parts[7])
+    for sample in asc_data.values():
+        components = map(float, sample["vector_data"]["Geograph"]["tensor"])
+        result[sample["name"]] = PrincipalDirs.from_tensor(components)
     return result
 
-class AgicoDirData:
-    pass
-
-def read_asc_new(filename):
+def read_asc(filename):
     results = OrderedDict()
 
     with open(filename, "r") as fh:

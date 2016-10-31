@@ -8,12 +8,12 @@ accuracy.
 
 from pyx import canvas, path
 import sys
-from ams_lib import read_ran, read_asc
+from ams_lib import directions_from_ran, directions_from_asc_tensors
 
 def main():
     filename = sys.argv[1]
-    ran = read_ran(filename+'.RAN')
-    asc = read_asc(filename+'.ASC')
+    ran = directions_from_ran(filename+'.RAN')
+    asc = directions_from_asc_tensors(filename+'.ASC')
 
     print(ran)
     c = canvas.canvas()
