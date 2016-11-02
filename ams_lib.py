@@ -19,10 +19,12 @@ class Direction:
     "A direction in three-dimensional space"
 
     def __init__(self, components):
+        "Create a direction from an (x, y, z) triplet"
         self.x, self.y, self.z = components
 
     @classmethod
     def from_polar_degrees(cls, dec, inc):
+        "Create a direction from declination and inclination in degrees"
         dr = radians(dec)
         ir = radians(inc)
         return Direction((cos(ir) * cos(dr),
@@ -31,30 +33,44 @@ class Direction:
 
     @classmethod
     def make_lower_hemisphere(cls, x, y, z):
+        """Create a lower-hemisphere direction from an (x, y, z) triplet.
+
+        If z<0, the co-ordinates will be flipped when creating the
+        Direction object."""
         if z<0: x, y, z = -x, -y, -z
         return Direction((x, y, z))
 
     def project(self, scale=10):
+        """Return a Lambert azimuthal equal-area projection of this direction
+        """
         x, y, z = self.x, self.y, self.z
         h2 = x*x + y*y
         if (h2 > 0): L = sqrt(1 - fabs(z))
         else: L = sqrt(h2)
         return (y * L * scale, x * L * scale)
 
-    def plot(self, c, shape = 's'):
+    def plot(self, canvas, shape = 's'):
+        """Plot this direction on a pyx canvas.
+
+        The direction will be transformed onto a Lambert equal-area 
+        projection and plotted as a square, circle, or triangle
+        (shape parameter: s, c, or t).
+        """
         (x, y) = self.project()
         if shape == 's':
-            c.stroke(path.rect(x-0.1, y-0.1, 0.2, 0.2))
+            canvas.stroke(path.rect(x-0.1, y-0.1, 0.2, 0.2))
         elif shape == 't':
             s=0.15
-            c.stroke(path.path(path.moveto(x, y+s),
-                               path.rlineto(-0.866*s, -1.5*s),
-                               path.rlineto(2*.866*s, 0),
-                               path.lineto(x, y+s)))
+            canvas.stroke(path.path(path.moveto(x, y+s),
+                                    path.rlineto(-0.866*s, -1.5*s),
+                                    path.rlineto(2*.866*s, 0),
+                                    path.lineto(x, y+s)))
         elif shape == 'c':
-            c.stroke(path.circle(x, y, 0.1))
+            canvas.stroke(path.circle(x, y, 0.1))
 
     def to_decinc(self):
+        """Convert this direction to declination/inclination (degrees)
+        """
         x,y,z, = self.x, self.y, self.z
         dec = degrees(atan2(y,x))
         if dec<0: dec += 360
@@ -74,7 +90,7 @@ class PrincipalDirs:
         """Make principal directions from a tensor.
 
         Any upward pointing directions are flipped, so all resulting
-        directions are in the lower hemisphere.
+        directions are in the lower hemisphere (z>0).
         """
         (k11, k22, k33, k12, k23, k13) = tensor
         matrix = [[k11, k12, k13], [k12, k22, k23], [k13, k23, k33]]
@@ -86,17 +102,29 @@ class PrincipalDirs:
         return PrincipalDirs(dirs[0], dirs[1], dirs[2],
                              tensor = tensor)
 
-    def plot(self, c, other=None):
-        self.p1.plot(c, 's')
-        self.p2.plot(c, 't')
-        self.p3.plot(c, 'c')
+    def plot(self, canvas, other=None):
+        """Plot these directions on a pyx canvas.
+
+        Plot these directions using standard AMS conventions:
+        Lambert equal-area projection; major direction as a square;
+        intermediate as triangle; and minor as circle.
+        """
+        self.p1.plot(canvas, 's')
+        self.p2.plot(canvas, 't')
+        self.p3.plot(canvas, 'c')
         if (other != None):
             for p in "p1", "p2", "p3":
                 v1 = getattr(self, p).project()
                 v2 = getattr(other, p).project()
-                c.stroke(path.line(v1[0], v1[1], v2[0], v2[1]))
+                canvas.stroke(path.line(v1[0], v1[1], v2[0], v2[1]))
 
     def to_decinc_string(self):
+        """Convert to a string of declination/inclination pairs.
+
+        Output string is formatted as:
+
+        dec1 inc1 dec2 inc2 dec3 inc3
+        """
         di1 = self.p1.to_decinc()
         di2 = self.p2.to_decinc()
         di3 = self.p3.to_decinc()
@@ -104,6 +132,18 @@ class PrincipalDirs:
         (di1[0], di1[1], di2[0], di2[1], di3[0], di3[1])
 
 def read_ran(filename):
+    """Read AMS data from a RAN file.
+
+    Returns a tuplet of (header_data, sample_data).
+
+    header_data is an ordered dictionary, indexed by header field name,
+    with an entry for each header data field.
+
+    sample_data is an ordered dictionary, indexed by sample name, with
+    an entry for each sample. Each entry in this dictionary is itself an
+    ordered dictionary, indexed by sample data field name, with an entry
+    for each item of sample data.
+    """
     samples = OrderedDict()
     with open(filename, mode='rb') as fh:
         header = fh.read(64)
@@ -261,4 +301,3 @@ def corrected_anisotropy_factor(ps1, ps2, ps3):
     e = (e1+e2+e3)/3.
     ssq = (e1-e)**2.+(e2-e)**2.+(e3-e)**2.
     return exp(sqrt(2*ssq))
-
