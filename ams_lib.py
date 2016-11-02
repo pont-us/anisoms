@@ -103,20 +103,42 @@ class PrincipalDirs:
         return "%3.3f %3.3f %3.3f %3.3f %3.3f %3.3f" % \
         (di1[0], di1[1], di2[0], di2[1], di3[0], di3[1])
 
-def directions_from_ran(filename):
-    result = OrderedDict()
+def read_ran(filename):
+    samples = OrderedDict()
     with open(filename, mode='rb') as fh:
         header = fh.read(64)
         headers = struct.unpack(header_format, header)
+        #   0        1     2    3    4      5     6     7         8   9
+        # N+2 LOCALITY LONGI LATI ROCK STRATI LITHO REGIO ORIENT.P. EOL
         num_recs = headers[0]-2
+        h = OrderedDict()
+        h["num_recs"] = num_recs
+        h["locality"], h["long"], h["lat"], h["rock"], h["strati"],\
+            h["litho"], h["regio"] = headers[1:8]
+        h["orient"] = headers[8:12]
         for i in range(0, num_recs):
+            s = OrderedDict()
             record = fh.read(64)
             f = struct.unpack(data_format, record)
             name = f[0].rstrip().decode()
             #   0         1     2    3    4    5    6    7    8
             # (id, mean_sus, norm, k11, k22, k33, k12, k23, k13,
             #  c1, fol11, fol12, lin11, lin12, c2, fol21, fol22, lin21, lin22)
-            result[name] = PrincipalDirs.from_tensor(f[3:9])
+            samples[name] = s
+            s["name"] = name
+            s["mean_susceptibility"] = f[1]
+            s["frequency"] = f[2] // 1000
+            s["field"] = f[2] % 1000
+            s["tensor"] = f[3:9]
+            s["C1"], s["FOLI1"], s["LINE1"], \
+                s["C2"], s["FOLI2"], s["LINE2"] = f[10:16]
+    return h, samples
+
+def directions_from_ran(filename):
+    headers, samples = read_ran(filename)
+    result = OrderedDict()
+    for s in samples:
+        result[s] = PrincipalDirs.from_tensor(samples[s]["tensor"])
     return result
 
 def directions_from_asc_tensors(filename):
@@ -143,7 +165,7 @@ def read_asc(filename):
         line = lines[i]
         fields = fieldss[i]
         if re.search("ANISOTROPY OF SUSCEPTIBILITY", line):
-            s = {}
+            s = OrderedDict()
             name = fields[0]
             results[name] = s
             s["name"] = name
@@ -239,4 +261,4 @@ def corrected_anisotropy_factor(ps1, ps2, ps3):
     e = (e1+e2+e3)/3.
     ssq = (e1-e)**2.+(e2-e)**2.+(e3-e)**2.
     return exp(sqrt(2*ssq))
-    
+
