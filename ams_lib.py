@@ -5,7 +5,7 @@ A library for reading and manipulating AMS data from AGICO instruments.
 """
 
 from pyx import canvas, path
-from math import sqrt, fabs, cos, sin, radians, atan2, degrees
+from math import sqrt, fabs, cos, sin, radians, atan2, degrees, log, exp
 import struct
 from numpy import argsort
 from numpy.linalg import eigh
@@ -165,13 +165,13 @@ def read_asc(filename):
                       "Tests for anisotropy"):
             # Only present in SAFYR files
             s["field"], s["frequency"], s["mean_susceptibility"], \
-                s["standard_error"], s["F"], s["F12"], s["F23"] = fieldss[i+2]
+                s["standard_error"], s["Ftest"], s["F12test"], s["F23test"] = fieldss[i+2]
             i += 2
         elif line == ("  Mean         Norming    Standard              "
                       "Tests for anisotropy"):
             # Only present in SUSAR files
             s["mean_susceptibility"], s["norming_factor"], \
-                s["standard_error"], s["F"], s["F12"], s["F23"] = fieldss[i+2]
+                s["standard_error"], s["Ftest"], s["F12test"], s["F23test"] = fieldss[i+2]
             i += 2
         elif line == ("          susceptibilities                   "
                       "Ax1        Ax2        Ax3"):
@@ -198,7 +198,8 @@ def read_asc(filename):
 
         elif line == ("       L       F       P      'P           "
                       "T       U       Q       E"):
-            s["L"], s["F"], s["P"], s["primeP"], s["T"], s["U"], s["Q"], s["E"] = fieldss[i+1]
+            s["L"], s["F"], s["P"], s["primeP"], s["T"], \
+                s["U"], s["Q"], s["E"] = fieldss[i+1]
             i += 1
         elif re.match("(Specimen|Geograph|(Pale|Tect)o [12] )  D    ", line):
             if "vector_data" not in s:
@@ -221,3 +222,21 @@ def read_asc(filename):
         i += 1
 
     return results
+
+def corrected_anisotropy_factor(ps1, ps2, ps3):
+    """Calculate the corrected anisotropy factor (P' or Pj)
+
+    See Jelínek, 1981, "Characterization of the magnetic fabric of
+    rocks" for definition. See also Hrouda, 1982, "Magnetic anisotropy
+    of rocks and its application in geology and geophysics". Notation
+    for this parameter is usually $P'$ or $P_j$; in the ASC file it
+    is "'P".
+
+    Arguments are the three principal susceptibilities in descending
+    order.
+    """
+    e1, e2, e3 = log(ps1), log(ps2), log(ps3)
+    e = (e1+e2+e3)/3.
+    ssq = (e1-e)**2.+(e2-e)**2.+(e3-e)**2.
+    return exp(sqrt(2*ssq))
+    
