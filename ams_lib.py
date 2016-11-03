@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# -*- coding: utf-8 -*-
 
 """
 A library for reading and manipulating AMS data from AGICO instruments.
@@ -143,6 +144,33 @@ def read_ran(filename):
     an entry for each sample. Each entry in this dictionary is itself an
     ordered dictionary, indexed by sample data field name, with an entry
     for each item of sample data.
+
+    Header field key names:
+    ::
+        num_recs   int
+        locality   string
+        long       string
+        lat        string
+        rock       string
+        strati     string
+        litho      string
+        regio      string
+        orient     string
+    
+    Sample field key names:
+    ::
+        name
+        mean_susceptibility
+        frequency
+        field
+        tensor
+        C1
+        FOLI1
+        LINE1
+        C2
+        FOLI2
+        LINE2
+
     """
     samples = OrderedDict()
     with open(filename, mode='rb') as fh:
@@ -190,6 +218,60 @@ def directions_from_asc_tensors(filename):
     return result
 
 def read_asc(filename):
+    """
+    Read AMS data from an AGICO ASC file.
+
+    returns an ordered dictionary indexed by sample name. All values
+    are returned as strings for maximum fidelity in format conversions.
+    The ASC format can vary a little, so not every possible field is
+    guaranteed to be present in every sample record.
+
+    List of keys in the sample record:
+    ::
+        name
+        program
+        azimuth
+        orientation_parameters
+        nominal_volume
+        dip
+        demagnetizing_factor_used
+        holder_susceptibility
+        actual_volume
+        T1
+        F1
+        L1
+        T2
+        F2
+        L2
+        field
+        frequency
+        mean_susceptibility
+        standard_error
+        Ftest
+        F12test
+        F23test
+        mean_susceptibility
+        norming_factor
+        standard_error
+        Ftest
+        F12test
+        F23test
+        principal_suscs
+        a95s
+        principal_susc_errs
+        a95_errs
+        L
+        F
+        P
+        primeP
+        T
+        U
+        Q
+        E
+        vector_data
+        date
+    
+    """
     results = OrderedDict()
 
     with open(filename, "r") as fh:

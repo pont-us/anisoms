@@ -1,0 +1,1 @@
+all = ["ams_lib"]
