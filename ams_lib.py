@@ -16,8 +16,9 @@ import re
 header_format = "<H16s7s7s4s4s4s4s3s3s3s3s4s"
 data_format = "<12s8f2s4h2s4h"
 
+
 class Direction:
-    "A direction in three-dimensional space"
+    """A direction in three-dimensional space"""
 
     def __init__(self, components):
         "Create a direction from an (x, y, z) triplet"
@@ -25,7 +26,7 @@ class Direction:
 
     @classmethod
     def from_polar_degrees(cls, dec, inc):
-        "Create a direction from declination and inclination in degrees"
+        """Create a direction from declination and inclination in degrees"""
         dr = radians(dec)
         ir = radians(inc)
         return Direction((cos(ir) * cos(dr),
@@ -70,19 +71,18 @@ class Direction:
             canvas.stroke(path.circle(x, y, 0.1))
 
     def to_decinc(self):
-        """Convert this direction to declination/inclination (degrees)
-        """
+        """Convert this direction to declination/inclination (degrees)"""
         x,y,z, = self.x, self.y, self.z
         dec = degrees(atan2(y,x))
         if dec<0: dec += 360
         inc = degrees(atan2(z, sqrt(x*x + y*y)))
         return dec,inc
 
+
 class PrincipalDirs:
+    """A set of three principal directions"""
 
-    "A set of three principal directions"
-
-    def __init__(self, p1, p2, p3, tensor = None):
+    def __init__(self, p1, p2, p3, tensor=None):
         self.p1, self.p2, self.p3 = p1, p2, p3
         self.tensor = tensor
 
@@ -101,7 +101,7 @@ class PrincipalDirs:
         dirs = [Direction.make_lower_hemisphere(*sorted_vecs[:, i])
                 for i in (0, 1, 2)]
         return PrincipalDirs(dirs[0], dirs[1], dirs[2],
-                             tensor = tensor)
+                             tensor=tensor)
 
     def plot(self, canvas, other=None):
         """Plot these directions on a pyx canvas.
@@ -113,7 +113,7 @@ class PrincipalDirs:
         self.p1.plot(canvas, 's')
         self.p2.plot(canvas, 't')
         self.p3.plot(canvas, 'c')
-        if (other != None):
+        if other is not None:
             for p in "p1", "p2", "p3":
                 v1 = getattr(self, p).project()
                 v2 = getattr(other, p).project()
@@ -130,7 +130,8 @@ class PrincipalDirs:
         di2 = self.p2.to_decinc()
         di3 = self.p3.to_decinc()
         return "%3.3f %3.3f %3.3f %3.3f %3.3f %3.3f" % \
-        (di1[0], di1[1], di2[0], di2[1], di3[0], di3[1])
+            (di1[0], di1[1], di2[0], di2[1], di3[0], di3[1])
+
 
 def read_ran(filename):
     """Read AMS data from a RAN file.
@@ -202,12 +203,14 @@ def read_ran(filename):
                 s["C2"], s["FOLI2"], s["LINE2"] = f[10:16]
     return h, samples
 
+
 def directions_from_ran(filename):
     headers, samples = read_ran(filename)
     result = OrderedDict()
     for s in samples:
         result[s] = PrincipalDirs.from_tensor(samples[s]["tensor"])
     return result
+
 
 def directions_from_asc_tensors(filename):
     asc_data = read_asc(filename)
@@ -216,6 +219,7 @@ def directions_from_asc_tensors(filename):
         components = map(float, sample["vector_data"]["Geograph"]["tensor"])
         result[sample["name"]] = PrincipalDirs.from_tensor(components)
     return result
+
 
 def read_asc(filename):
     """
@@ -366,6 +370,7 @@ def read_asc(filename):
         i += 1
 
     return results
+
 
 def corrected_anisotropy_factor(ps1, ps2, ps3):
     """Calculate the corrected anisotropy factor (P' or Pj)
