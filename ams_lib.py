@@ -5,13 +5,14 @@
 A library for reading and manipulating AMS data from AGICO instruments.
 """
 
-from pyx import canvas, path
-from math import sqrt, fabs, cos, sin, radians, atan2, degrees, log, exp
+import re
 import struct
+from collections import OrderedDict
+from math import sqrt, fabs, cos, sin, radians, atan2, degrees, log, exp
+
 from numpy import argsort
 from numpy.linalg import eigh
-from collections import OrderedDict
-import re
+from pyx import path
 
 header_format = "<H16s7s7s4s4s4s4s3s3s3s3s4s"
 data_format = "<12s8f2s4h2s4h"
@@ -21,7 +22,7 @@ class Direction:
     """A direction in three-dimensional space"""
 
     def __init__(self, components):
-        "Create a direction from an (x, y, z) triplet"
+        """Create a direction from an (x, y, z) triplet"""
         self.x, self.y, self.z = components
 
     @classmethod
@@ -30,8 +31,8 @@ class Direction:
         dr = radians(dec)
         ir = radians(inc)
         return Direction((cos(ir) * cos(dr),
-                         cos(ir) * sin(dr),
-                         sin(ir)))
+                          cos(ir) * sin(dr),
+                          sin(ir)))
 
     @classmethod
     def make_lower_hemisphere(cls, x, y, z):
@@ -39,19 +40,21 @@ class Direction:
 
         If z<0, the co-ordinates will be flipped when creating the
         Direction object."""
-        if z<0: x, y, z = -x, -y, -z
+        if z < 0: x, y, z = -x, -y, -z
         return Direction((x, y, z))
 
     def project(self, scale=10):
         """Return a Lambert azimuthal equal-area projection of this direction
         """
         x, y, z = self.x, self.y, self.z
-        h2 = x*x + y*y
-        if (h2 > 0): L = sqrt(1 - fabs(z))
-        else: L = sqrt(h2)
-        return (y * L * scale, x * L * scale)
+        h2 = x * x + y * y
+        if h2 > 0:
+            L = sqrt(1 - fabs(z))
+        else:
+            L = sqrt(h2)
+        return y * L * scale, x * L * scale
 
-    def plot(self, canvas, shape = 's'):
+    def plot(self, canvas, shape='s'):
         """Plot this direction on a pyx canvas.
 
         The direction will be transformed onto a Lambert equal-area 
@@ -60,23 +63,23 @@ class Direction:
         """
         (x, y) = self.project()
         if shape == 's':
-            canvas.stroke(path.rect(x-0.1, y-0.1, 0.2, 0.2))
+            canvas.stroke(path.rect(x - 0.1, y - 0.1, 0.2, 0.2))
         elif shape == 't':
-            s=0.15
-            canvas.stroke(path.path(path.moveto(x, y+s),
-                                    path.rlineto(-0.866*s, -1.5*s),
-                                    path.rlineto(2*.866*s, 0),
-                                    path.lineto(x, y+s)))
+            s = 0.15
+            canvas.stroke(path.path(path.moveto(x, y + s),
+                                    path.rlineto(-0.866 * s, -1.5 * s),
+                                    path.rlineto(2 * .866 * s, 0),
+                                    path.lineto(x, y + s)))
         elif shape == 'c':
             canvas.stroke(path.circle(x, y, 0.1))
 
     def to_decinc(self):
         """Convert this direction to declination/inclination (degrees)"""
-        x,y,z, = self.x, self.y, self.z
-        dec = degrees(atan2(y,x))
-        if dec<0: dec += 360
-        inc = degrees(atan2(z, sqrt(x*x + y*y)))
-        return dec,inc
+        x, y, z, = self.x, self.y, self.z
+        dec = degrees(atan2(y, x))
+        if dec < 0: dec += 360
+        inc = degrees(atan2(z, sqrt(x * x + y * y)))
+        return dec, inc
 
 
 class PrincipalDirs:
@@ -130,7 +133,7 @@ class PrincipalDirs:
         di2 = self.p2.to_decinc()
         di3 = self.p3.to_decinc()
         return "%3.3f %3.3f %3.3f %3.3f %3.3f %3.3f" % \
-            (di1[0], di1[1], di2[0], di2[1], di3[0], di3[1])
+               (di1[0], di1[1], di2[0], di2[1], di3[0], di3[1])
 
 
 def read_ran(filename):
@@ -174,15 +177,15 @@ def read_ran(filename):
 
     """
     samples = OrderedDict()
-    with open(filename, mode='rb') as fh:
+    with open(filename, mode="rb") as fh:
         header = fh.read(64)
         headers = struct.unpack(header_format, header)
         #   0        1     2    3    4      5     6     7         8   9
         # N+2 LOCALITY LONGI LATI ROCK STRATI LITHO REGIO ORIENT.P. EOL
-        num_recs = headers[0]-2
+        num_recs = headers[0] - 2
         h = OrderedDict()
         h["num_recs"] = num_recs
-        h["locality"], h["long"], h["lat"], h["rock"], h["strati"],\
+        h["locality"], h["long"], h["lat"], h["rock"], h["strati"], \
             h["litho"], h["regio"] = headers[1:8]
         h["orient"] = headers[8:12]
         for i in range(0, num_recs):
@@ -225,10 +228,21 @@ def read_asc(filename):
     """
     Read AMS data from an AGICO ASC file.
 
-    returns an ordered dictionary indexed by sample name. All values
+    Returns an ordered dictionary indexed by sample name. All values
     are returned as strings for maximum fidelity in format conversions.
     The ASC format can vary a little, so not every possible field is
     guaranteed to be present in every sample record.
+
+    The ``vector_data`` key points to another dictionary, indexed by
+    co-ordinate system ("Specimen", "Geograph", etc.). For each co-ordinate
+    system present in the ASC data for the sample, the relevant key points
+    to *another* dictionary with the keys "directions" and "tensor".
+    "directions" points to a list of three tuples (the principal directions).
+    "tensor" points to a list of six values defining the anisotropy tensor.
+    So, for instance, to get the second principal direction in the geographic
+    system of the sample "jeff", one could write:
+
+    ``read_asc(filename)["jeff"]["vector_data"]["Geograph"]["directions"][1]``
 
     List of keys in the sample record:
     ::
@@ -280,8 +294,8 @@ def read_asc(filename):
 
     with open(filename, "r") as fh:
         lines_raw = fh.readlines()
-    
-    lines = [line.rstrip() for line in lines_raw if len(line)>1]
+
+    lines = [line.rstrip() for line in lines_raw if len(line) > 1]
 
     fieldss = [line.split() for line in lines]
 
@@ -307,19 +321,22 @@ def read_asc(filename):
             s["actual_volume"] = fields[10]
         elif line == ("T1          F1          L1                "
                       "T2          F2          L2"):
-            s["T1"], s["F1"], s["L1"], s["T2"], s["F2"], s["L2"] = fieldss[i+1]
+            s["T1"], s["F1"], s["L1"], s["T2"], s["F2"], s["L2"] = fieldss[
+                i + 1]
             i += 1
         elif line == ("  Field         Mean      Standard              "
                       "Tests for anisotropy"):
             # Only present in SAFYR files
             s["field"], s["frequency"], s["mean_susceptibility"], \
-                s["standard_error"], s["Ftest"], s["F12test"], s["F23test"] = fieldss[i+2]
+                s["standard_error"], s["Ftest"], s["F12test"], s["F23test"] = \
+                fieldss[i + 2]
             i += 2
         elif line == ("  Mean         Norming    Standard              "
                       "Tests for anisotropy"):
             # Only present in SUSAR files
             s["mean_susceptibility"], s["norming_factor"], \
-                s["standard_error"], s["Ftest"], s["F12test"], s["F23test"] = fieldss[i+2]
+                s["standard_error"], s["Ftest"], s["F12test"], s["F23test"] = \
+                fieldss[i + 2]
             i += 2
         elif line == ("          susceptibilities                   "
                       "Ax1        Ax2        Ax3"):
@@ -327,8 +344,8 @@ def read_asc(filename):
             # using the automatic sample rotator (as opposed to
             # 15-position static specimen measurement).
 
-            ps1, ps2, ps3, a95_1, a95_2, a95_3 = fieldss[i+1]
-            ps1e, ps2e, ps3e, a95_1e, a95_2e, a95_3e = fieldss[i+2][1:]
+            ps1, ps2, ps3, a95_1, a95_2, a95_3 = fieldss[i + 1]
+            ps1e, ps2e, ps3e, a95_1e, a95_2e, a95_3e = fieldss[i + 2][1:]
 
             s["principal_suscs"] = [ps1, ps2, ps3]
             s["a95s"] = [a95_1, a95_2, a95_3]
@@ -342,12 +359,12 @@ def read_asc(filename):
             # This line is only present if the sample was measured
             # using 15-position static specimen measurement.
 
-            pass # Not handled yet
+            pass  # Not handled yet
 
         elif line == ("       L       F       P      'P           "
                       "T       U       Q       E"):
             s["L"], s["F"], s["P"], s["primeP"], s["T"], \
-                s["U"], s["Q"], s["E"] = fieldss[i+1]
+                s["U"], s["Q"], s["E"] = fieldss[i + 1]
             i += 1
         elif re.match("(Specimen|Geograph|(Pale|Tect)o [12] )  D    ", line):
             if "vector_data" not in s:
@@ -355,13 +372,16 @@ def read_asc(filename):
             vector_data = {}
             coord_system = line[:8].rstrip()
             s["vector_data"][coord_system] = vector_data
-            # If the co-ordinate system string contains a space,
-            # it will have been split into two fields, so all
-            # subsequent fields will be offset by one.
+
+            # If the co-ordinate system string contains a space, it will have
+            # been split into two fields, so all subsequent fields will be
+            # offset by one.
             field_offset = 0
-            if " " in coord_system: field_offset = 1
+            if " " in coord_system:
+                field_offset = 1
+
             d1, d2, d3, k11, k22, k33 = fields[(2 + field_offset):]
-            i1, i2, i3, k12, k23, k13 = fieldss[i+1][2:]
+            i1, i2, i3, k12, k23, k13 = fieldss[i + 1][2:]
             vector_data["directions"] = [(d1, i1), (d2, i2), (d3, i3)]
             vector_data["tensor"] = [k11, k22, k33, k12, k23, k13]
             i += 1
@@ -385,6 +405,6 @@ def corrected_anisotropy_factor(ps1, ps2, ps3):
     order.
     """
     e1, e2, e3 = log(ps1), log(ps2), log(ps3)
-    e = (e1+e2+e3)/3.
-    ssq = (e1-e)**2.+(e2-e)**2.+(e3-e)**2.
-    return exp(sqrt(2*ssq))
+    e = (e1 + e2 + e3) / 3.
+    ssq = (e1 - e) ** 2. + (e2 - e) ** 2. + (e3 - e) ** 2.
+    return exp(sqrt(2 * ssq))

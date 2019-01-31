@@ -34,11 +34,11 @@ def read_asc_dec_inc_data(filename, system_header, verbose):
 
 
 def make_dirs_plot(filename, dirss):
-    mycanvas = canvas.canvas()
-    mycanvas.stroke(path.circle(0, 0, 10))
+    plot_canvas = canvas.canvas()
+    plot_canvas.stroke(path.circle(0, 0, 10))
     for dirs in dirss:
-        dirs.plot(mycanvas)
-    mycanvas.writePDFfile(filename)
+        dirs.plot(plot_canvas)
+    plot_canvas.writePDFfile(filename)
 
 
 def main():

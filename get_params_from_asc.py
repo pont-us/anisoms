@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
 import argparse
-import re
+
 from ams_lib import read_asc
+
 
 def print_data(samples, parameter, system):
     for sample in samples.values():
@@ -11,7 +12,7 @@ def print_data(samples, parameter, system):
         elif system == "geograph":
             dirs = sample["vector_data"]["Geograph"]
         else:
-            assert(False)
+            assert False
         if parameter == "magsus":
             print(sample["name"], sample["mean_susceptibility"])
         elif parameter == "incdec":
@@ -26,25 +27,27 @@ def print_data(samples, parameter, system):
         elif parameter == "t":
             print(sample["name"], sample["T"])
 
+
 def main():
-    parser = argparse.ArgumentParser(description =
-        "Print selected parameters from an Agico ASC file")
-    parser.add_argument("ascfiles", metavar = "asc-file",
-                        type = str, nargs = "+",
-                        help = "an ASC file to read")
-    parser.add_argument('--param', "-p", metavar = "parameter-name",
-                        type = str, default="magsus",
-                        choices = ["magsus", "incdec", "tensor", "pj", "t"],
-                        help = "Parameter to extract"
-                        "(magsus, incdec, pj, t, or tensor)")
-    parser.add_argument('--system', "-s", metavar = "coordinate-system",
-                        type = str, default="specimen",
-                        choices = ["specimen", "geograph"],
-                        help = "Co-ordinate system (specimen or geograph)")
+    parser = argparse.ArgumentParser(description="Print selected parameters "
+                                                 "from an Agico ASC file")
+    parser.add_argument("ascfiles", metavar="asc-file",
+                        type=str, nargs="+",
+                        help="an ASC file to read")
+    parser.add_argument('--param', "-p", metavar="parameter-name",
+                        type=str, default="magsus",
+                        choices=["magsus", "incdec", "tensor", "pj", "t"],
+                        help="Parameter to extract"
+                             "(magsus, incdec, pj, t, or tensor)")
+    parser.add_argument('--system', "-s", metavar="coordinate-system",
+                        type=str, default="specimen",
+                        choices=["specimen", "geograph"],
+                        help="Co-ordinate system (specimen or geograph)")
     args = parser.parse_args()
     for filename in args.ascfiles:
         samples = read_asc(filename)
         print_data(samples, args.param, args.system)
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     main()
