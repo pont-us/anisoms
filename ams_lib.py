@@ -217,13 +217,41 @@ def directions_from_ran(filename):
     return result
 
 
-def directions_from_asc_tensors(filename):
+def directions_from_asc_tensors(filename, system_header="Geograph"):
     asc_data = read_asc(filename)
     result = OrderedDict()
     for sample in asc_data.values():
-        components = map(float, sample["vector_data"]["Geograph"]["tensor"])
+        components = map(float, sample["vector_data"][system_header]["tensor"])
         result[sample["name"]] = PrincipalDirs.from_tensor(components)
     return result
+
+
+def directions_from_asc_directions(filename, system_header):
+    # This could be rewritten to use read_asc.
+    dirss = {}
+    found_header = False
+    with open(filename, "r") as fh:
+        for line in fh.readlines():
+
+            parts = line.split()
+            if "ANISOTROPY" in parts:
+                sample_name = parts[0]
+            if found_header:
+                found_header = False
+                i1 = float(parts[2])
+                i2 = float(parts[3])
+                i3 = float(parts[4])
+                dirs = PrincipalDirs(
+                    Direction.from_polar_degrees(d1, i1),
+                    Direction.from_polar_degrees(d2, i2),
+                    Direction.from_polar_degrees(d3, i3))
+                dirss[sample_name] = dirs
+            if len(parts) > 0 and parts[0] == system_header:
+                found_header = True
+                d1 = float(parts[2])
+                d2 = float(parts[3])
+                d3 = float(parts[4])
+    return dirss
 
 
 def read_asc(filename):
