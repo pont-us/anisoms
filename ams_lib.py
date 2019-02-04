@@ -13,6 +13,7 @@ from math import sqrt, fabs, cos, sin, radians, atan2, degrees, log, exp
 from numpy import argsort
 from numpy.linalg import eigh
 from pyx import path
+import pyx
 
 header_format = "<H16s7s7s4s4s4s4s3s3s3s3s4s"
 data_format = "<12s8f2s4h2s4h"
@@ -69,7 +70,7 @@ class Direction:
             canvas.stroke(path.path(path.moveto(x, y + s),
                                     path.rlineto(-0.866 * s, -1.5 * s),
                                     path.rlineto(2 * .866 * s, 0),
-                                    path.lineto(x, y + s)))
+                                    path.closepath()))
         elif shape == 'c':
             canvas.stroke(path.circle(x, y, 0.1))
 
@@ -120,7 +121,8 @@ class PrincipalDirs:
             for p in "p1", "p2", "p3":
                 v1 = getattr(self, p).project()
                 v2 = getattr(other, p).project()
-                canvas.stroke(path.line(v1[0], v1[1], v2[0], v2[1]))
+                canvas.stroke(path.line(v1[0], v1[1], v2[0], v2[1]),
+                              [pyx.style.linecap.round])
 
     def to_decinc_string(self):
         """Convert to a string of declination/inclination pairs.
