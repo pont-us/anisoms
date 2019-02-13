@@ -45,7 +45,7 @@ def main():
     # Add default settings in case not enough arguments were given for the
     # supplied ASC files.
     coords_types = args.coordinates + ["g", "g"]
-    direction_types = args.directions + ["t", "t"]
+    direction_types = args.directions + ["p", "p"]
 
     direction_sets = []
     for filetype, filename in args.ordered_args:
@@ -55,7 +55,6 @@ def main():
                               direction_types))
 
     if len(direction_sets) == 1:
-        print(direction_sets[0])
         make_dirs_plot(args.output, direction_sets[0])
     else:
         make_dirs_plot(args.output, direction_sets[0], other=direction_sets[1])

@@ -55,7 +55,7 @@ class Direction:
             L = sqrt(h2)
         return y * L * scale, x * L * scale
 
-    def plot(self, canvas, shape='s'):
+    def plot(self, canvas, shape="s"):
         """Plot this direction on a pyx canvas.
 
         The direction will be transformed onto a Lambert equal-area 
@@ -63,22 +63,23 @@ class Direction:
         (shape parameter: s, c, or t).
         """
         (x, y) = self.project()
-        if shape == 's':
+        if shape == "s":
             canvas.stroke(path.rect(x - 0.1, y - 0.1, 0.2, 0.2))
-        elif shape == 't':
+        elif shape == "t":
             s = 0.15
             canvas.stroke(path.path(path.moveto(x, y + s),
                                     path.rlineto(-0.866 * s, -1.5 * s),
                                     path.rlineto(2 * .866 * s, 0),
                                     path.closepath()))
-        elif shape == 'c':
+        elif shape == "c":
             canvas.stroke(path.circle(x, y, 0.1))
 
     def to_decinc(self):
         """Convert this direction to declination/inclination (degrees)"""
         x, y, z, = self.x, self.y, self.z
         dec = degrees(atan2(y, x))
-        if dec < 0: dec += 360
+        if dec < 0:
+            dec += 360
         inc = degrees(atan2(z, sqrt(x * x + y * y)))
         return dec, inc
 
@@ -110,13 +111,18 @@ class PrincipalDirs:
     def plot(self, canvas, other=None):
         """Plot these directions on a pyx canvas.
 
-        Plot these directions using standard AMS conventions:
-        Lambert equal-area projection; major direction as a square;
-        intermediate as triangle; and minor as circle.
+        Plot these directions using standard AMS conventions: Lambert
+        equal-area projection; major direction as a square; intermediate
+        direction as a triangle; minor direction as a circle. If the
+        "other" argument is provided, additionally draw a line from each
+        direction in this PrincipalDirs object to its corresponding direction
+        in the other PrincipalDirs object; this is intended to provide a
+        visual comparison between pairs of PrincipalDirs objects, in
+        particular when the dierctions are close to one another.
         """
-        self.p1.plot(canvas, 's')
-        self.p2.plot(canvas, 't')
-        self.p3.plot(canvas, 'c')
+        self.p1.plot(canvas, "s")
+        self.p2.plot(canvas, "t")
+        self.p3.plot(canvas, "c")
         if other is not None:
             for p in "p1", "p2", "p3":
                 v1 = getattr(self, p).project()
@@ -209,51 +215,6 @@ def read_ran(filename):
     return h, samples
 
 
-def directions_from_ran(filename):
-    headers, samples = read_ran(filename)
-    result = OrderedDict()
-    for s in samples:
-        result[s] = PrincipalDirs.from_tensor(samples[s]["tensor"])
-    return result
-
-
-def directions_from_asc_tensors(filename, system_header="Geograph"):
-    asc_data = read_asc(filename)
-    result = OrderedDict()
-    for sample in asc_data.values():
-        components = map(float, sample["vector_data"][system_header]["tensor"])
-        result[sample["name"]] = PrincipalDirs.from_tensor(components)
-    return result
-
-
-def directions_from_asc_directions(filename, system_header):
-    # This could be rewritten to use read_asc.
-    dirss = {}
-    found_header = False
-    with open(filename, "r") as fh:
-        for line in fh.readlines():
-
-            parts = line.split()
-            if "ANISOTROPY" in parts:
-                sample_name = parts[0]
-            if found_header:
-                found_header = False
-                i1 = float(parts[2])
-                i2 = float(parts[3])
-                i3 = float(parts[4])
-                dirs = PrincipalDirs(
-                    Direction.from_polar_degrees(d1, i1),
-                    Direction.from_polar_degrees(d2, i2),
-                    Direction.from_polar_degrees(d3, i3))
-                dirss[sample_name] = dirs
-            if len(parts) > 0 and parts[0] == system_header:
-                found_header = True
-                d1 = float(parts[2])
-                d2 = float(parts[3])
-                d3 = float(parts[4])
-    return dirss
-
-
 def read_asc(filename):
     """
     Read AMS data from an AGICO ASC file.
@@ -318,7 +279,7 @@ def read_asc(filename):
         E
         vector_data
         date
-    
+
     """
     results = OrderedDict()
 
@@ -358,14 +319,14 @@ def read_asc(filename):
                       "Tests for anisotropy"):
             # Only present in SAFYR files
             s["field"], s["frequency"], s["mean_susceptibility"], \
-                s["standard_error"], s["Ftest"], s["F12test"], s["F23test"] = \
+            s["standard_error"], s["Ftest"], s["F12test"], s["F23test"] = \
                 fieldss[i + 2]
             i += 2
         elif line == ("  Mean         Norming    Standard              "
                       "Tests for anisotropy"):
             # Only present in SUSAR files
             s["mean_susceptibility"], s["norming_factor"], \
-                s["standard_error"], s["Ftest"], s["F12test"], s["F23test"] = \
+            s["standard_error"], s["Ftest"], s["F12test"], s["F23test"] = \
                 fieldss[i + 2]
             i += 2
         elif line == ("          susceptibilities                   "
@@ -394,7 +355,7 @@ def read_asc(filename):
         elif line == ("       L       F       P      'P           "
                       "T       U       Q       E"):
             s["L"], s["F"], s["P"], s["primeP"], s["T"], \
-                s["U"], s["Q"], s["E"] = fieldss[i + 1]
+            s["U"], s["Q"], s["E"] = fieldss[i + 1]
             i += 1
         elif re.match("(Specimen|Geograph|(Pale|Tect)o [12] )  D    ", line):
             if "vector_data" not in s:
@@ -420,6 +381,51 @@ def read_asc(filename):
         i += 1
 
     return results
+
+
+def directions_from_ran(filename):
+    headers, samples = read_ran(filename)
+    result = OrderedDict()
+    for s in samples:
+        result[s] = PrincipalDirs.from_tensor(samples[s]["tensor"])
+    return result
+
+
+def directions_from_asc_tensors(filename, system_header="Geograph"):
+    asc_data = read_asc(filename)
+    result = OrderedDict()
+    for sample in asc_data.values():
+        components = map(float, sample["vector_data"][system_header]["tensor"])
+        result[sample["name"]] = PrincipalDirs.from_tensor(components)
+    return result
+
+
+def directions_from_asc_directions(filename, system_header):
+    # This could be rewritten to use read_asc.
+    dirss = {}
+    found_header = False
+    with open(filename, "r") as fh:
+        for line in fh.readlines():
+
+            parts = line.split()
+            if "ANISOTROPY" in parts:
+                sample_name = parts[0]
+            if found_header:
+                found_header = False
+                i1 = float(parts[2])
+                i2 = float(parts[3])
+                i3 = float(parts[4])
+                dirs = PrincipalDirs(
+                    Direction.from_polar_degrees(d1, i1),
+                    Direction.from_polar_degrees(d2, i2),
+                    Direction.from_polar_degrees(d3, i3))
+                dirss[sample_name] = dirs
+            if len(parts) > 0 and parts[0] == system_header:
+                found_header = True
+                d1 = float(parts[2])
+                d2 = float(parts[3])
+                d3 = float(parts[4])
+    return dirss
 
 
 def corrected_anisotropy_factor(ps1, ps2, ps3):
