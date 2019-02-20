@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from ams_lib import read_asc, corrected_anisotropy_factor
+from anisoms.anisoms import read_asc, corrected_anisotropy_factor
 import sys
 
 F_LIMIT = 3.9715

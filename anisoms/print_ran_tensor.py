@@ -5,7 +5,7 @@ Reads AGICO RAN files and outputs the (sample corrected) AMS tensors.
 """
 
 import sys
-from ams_lib import directions_from_ran
+from anisoms.anisoms import directions_from_ran
 
 for filename in sys.argv[1:]:
     dirs = directions_from_ran(filename)
