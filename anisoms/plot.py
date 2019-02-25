@@ -4,8 +4,8 @@ import argparse
 
 from pyx import canvas, path
 
-from anisoms.anisoms import directions_from_asc_directions
-from anisoms.anisoms import directions_from_asc_tensors, directions_from_ran
+from anisoms import directions_from_asc_directions
+from anisoms import directions_from_asc_tensors, directions_from_ran
 
 
 def main():

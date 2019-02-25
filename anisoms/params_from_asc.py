@@ -2,7 +2,7 @@
 
 import argparse
 
-from anisoms.anisoms import read_asc
+from anisoms import read_asc
 
 
 def print_data(samples, parameter, system):

@@ -12,7 +12,7 @@ Example usage:
 """
 
 import fileinput
-from anisoms.anisoms import PrincipalDirs
+from anisoms import PrincipalDirs
 
 for line in fileinput.input():
     ks = map(float, line.split())
