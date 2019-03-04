@@ -34,8 +34,9 @@ def main():
                         action="store_true")
     args = parser.parse_args()
 
-    if len(args.ordered_args) == 0:
-        print("Use --ascfile or --ranfile to specify one or two input files.")
+    if "ordered_args" not in args:
+        print("Use --ascfile and/or --ranfile "
+              "to specify one or two input files.")
         exit(1)
 
     if len(args.ordered_args) > 2:
@@ -62,11 +63,11 @@ def main():
 
 class OrderedArgsAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
-        if 'ordered_args' not in namespace:
-            setattr(namespace, 'ordered_args', [])
+        if "ordered_args" not in namespace:
+            setattr(namespace, "ordered_args", [])
         previous = namespace.ordered_args
         previous.append((self.dest, values))
-        setattr(namespace, 'ordered_args', previous)
+        setattr(namespace, "ordered_args", previous)
 
 
 def read_data(filetype, filename, coords_types, direction_types):

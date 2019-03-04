@@ -386,8 +386,8 @@ def read_asc(filename):
 def directions_from_ran(filename):
     headers, samples = read_ran(filename)
     result = OrderedDict()
-    for s in samples:
-        result[s] = PrincipalDirs.from_tensor(samples[s]["tensor"])
+    for sample in samples:
+        result[sample] = PrincipalDirs.from_tensor(samples[sample]["tensor"])
     return result
 
 

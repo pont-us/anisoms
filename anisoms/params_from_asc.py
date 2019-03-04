@@ -1,6 +1,11 @@
 #!/usr/bin/python3
 
+"""
+Print selected parameters from an Agico ASC file.
+"""
+
 import argparse
+import sys
 
 from anisoms import read_asc
 
@@ -12,7 +17,9 @@ def print_data(samples, parameter, system):
         elif system == "geograph":
             dirs = sample["vector_data"]["Geograph"]
         else:
-            assert False
+            sys.stderr.write("Unknown co-ordinate systerm \"{}\"".
+                             format(system))
+            sys.exit(1)
         if parameter == "magsus":
             print(sample["name"], sample["mean_susceptibility"])
         elif parameter == "incdec":

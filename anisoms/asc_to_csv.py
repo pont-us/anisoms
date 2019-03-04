@@ -1,5 +1,11 @@
 #!/usr/bin/python3
 
+"""
+Convert anisotropy of magnetic susceptibility (AMS) data from ASC format
+to CSV format.
+"""
+
+
 import argparse
 
 from anisoms import read_asc, corrected_anisotropy_factor
