@@ -1,8 +1,10 @@
 #!/usr/bin/python3
 
-"""
-Convert anisotropy of magnetic susceptibility (AMS) data from ASC format
-to CSV format.
+"""Convert AMS data from Agico ASC format to CSV format.
+
+A simple command-line tool to extract a hard-coded selection of data from an
+Agico AMS (anisotropy of magnetic susceptibility) file and output them as a
+CSV file.
 """
 
 

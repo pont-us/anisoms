@@ -1,9 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-"""
-A library for reading and manipulating AMS data from AGICO instruments.
-"""
+"""A library to read and manipulate AMS data from AGICO instruments."""
 
 import re
 import struct
@@ -216,8 +214,7 @@ def read_ran(filename):
 
 
 def read_asc(filename):
-    """
-    Read AMS data from an AGICO ASC file.
+    """Read AMS data from an AGICO ASC file.
 
     Returns an ordered dictionary indexed by sample name. All values
     are returned as strings for maximum fidelity in format conversions.
@@ -279,7 +276,6 @@ def read_asc(filename):
         E
         vector_data
         date
-
     """
     results = OrderedDict()
 
@@ -355,7 +351,7 @@ def read_asc(filename):
         elif line == ("       L       F       P      'P           "
                       "T       U       Q       E"):
             s["L"], s["F"], s["P"], s["primeP"], s["T"], \
-            s["U"], s["Q"], s["E"] = fieldss[i + 1]
+                s["U"], s["Q"], s["E"] = fieldss[i + 1]
             i += 1
         elif re.match("(Specimen|Geograph|(Pale|Tect)o [12] )  D    ", line):
             if "vector_data" not in s:
@@ -384,6 +380,15 @@ def read_asc(filename):
 
 
 def directions_from_ran(filename):
+    """Read directions from a RAN file.
+
+    Directions are returned in the geographical co-ordinate system, since this
+    is the only system used in a RAN file.
+
+    :param filename: an Agico RAN file to read
+    :return: an ordered dictionary whose keys are sample names and
+             whose values are PrincipalDirs objects
+    """
     headers, samples = read_ran(filename)
     result = OrderedDict()
     for sample in samples:
@@ -392,6 +397,18 @@ def directions_from_ran(filename):
 
 
 def directions_from_asc_tensors(filename, system_header="Geograph"):
+    """Calculate principal directions from tensors in an ASC file.
+
+    The requested co-ordinate system is specified in the same string format
+    that the ASC file itself uses: "Specimen", "Geograph" "Paleo 1", "Paleo 2",
+    "Tecto 1", or "Tecto 2". If any sample in the file does not have data
+    for the requested co-ordinate system, an exception will be raised.
+
+    :param filename: an Agico ASC file to read
+    :param system_header: a string specifying the co-ordinate system to use
+    :return: an ordered dictionary whose keys are sample names and
+             whose values are PrincipalDirs objects
+    """
     asc_data = read_asc(filename)
     result = OrderedDict()
     for sample in asc_data.values():
@@ -401,8 +418,21 @@ def directions_from_asc_tensors(filename, system_header="Geograph"):
 
 
 def directions_from_asc_directions(filename, system_header):
-    # This could be rewritten to use read_asc.
-    dirss = {}
+    """Read principal directions from an ASC file.
+
+    The requested co-ordinate system is specified in the same string format
+    that the ASC file itself uses: "Specimen", "Geograph" "Paleo 1", "Paleo 2",
+    "Tecto 1", or "Tecto 2". If any sample in the file does not have data
+    for the requested co-ordinate system, it will be omitted from the returned
+    dictionary.
+
+    :param filename: an Agico ASC file to read
+    :param system_header: a string specifying the co-ordinate system to use
+    :return: an ordered dictionary whose keys are sample names and
+             whose values are PrincipalDirs objects
+    """
+    # TODO: this could be rewritten to use read_asc.
+    dirss = OrderedDict()
     found_header = False
     with open(filename, "r") as fh:
         for line in fh.readlines():

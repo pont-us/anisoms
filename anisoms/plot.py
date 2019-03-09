@@ -1,5 +1,11 @@
 #!/usr/bin/python3
 
+"""Plot AMS directions from ASC and RAN files.
+
+This script produces equal-area PDF plots of AMS data from files in Agico ASC
+and/or RAN format.
+"""
+
 import argparse
 
 from pyx import canvas, path

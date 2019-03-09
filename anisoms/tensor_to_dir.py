@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
-"""
-Print the first principal directions of tensors
+"""Print the first principal directions of supplied tensors.
 
 Input: tensors, one to a line, six elements separated by whitespace
 Output: first principal direction for each tensor (declination inclination)

@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 
-"""
-Print selected parameters from an Agico ASC file.
-"""
+"""Print selected parameters from an Agico ASC file."""
 
 import argparse
 import sys
