@@ -7,8 +7,8 @@ Output: first principal direction for each tensor (declination inclination)
 
 Example usage::
 
-    ./params_from_asc.py -p tensor DATAFILE.ASC | \
-        cut -d' ' -f2-7 | \
+    ./params_from_asc.py -p tensor DATAFILE.ASC | \\
+        cut -d' ' -f2-7 | \\
         ./tensor_to_dir.py
 """
 

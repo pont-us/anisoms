@@ -116,7 +116,7 @@ class PrincipalDirs:
         direction in this PrincipalDirs object to its corresponding direction
         in the other PrincipalDirs object; this is intended to provide a
         visual comparison between pairs of PrincipalDirs objects, in
-        particular when the dierctions are close to one another.
+        particular when the directions are close to one another.
         """
         self.p1.plot(canvas, "s")
         self.p2.plot(canvas, "t")
@@ -155,32 +155,14 @@ def read_ran(filename):
     ordered dictionary, indexed by sample data field name, with an entry
     for each item of sample data.
 
-    Header field key names:
-    ::
-        num_recs   int
-        locality   string
-        long       string
-        lat        string
-        rock       string
-        strati     string
-        litho      string
-        regio      string
-        orient     string
+    Header field key names: ``num_recs``, ``int``, ``locality``, ``long``
+    ``lat``, ``rock``, ``strati``, ``litho``, ``regio``, ``orient``. All
+    of these have string values, except ``num_recs``, which has an ``int``
+    value.
     
-    Sample field key names:
-    ::
-        name
-        mean_susceptibility
-        frequency
-        field
-        tensor
-        C1
-        FOLI1
-        LINE1
-        C2
-        FOLI2
-        LINE2
-
+    Sample field key names: ``name``, ``mean_susceptibility``, ``frequency``,
+    ``field``, ``tensor``, ``C1``, ``FOLI1``, ``LINE1``,
+    ``C2``, ``FOLI2``, ``LINE2``
     """
     samples = OrderedDict()
     with open(filename, mode="rb") as fh:
@@ -233,49 +215,16 @@ def read_asc(filename):
     ``read_asc(filename)["jeff"]["vector_data"]["Geograph"]["directions"][1]``
 
     List of keys in the sample record:
-    ::
-        name
-        program
-        azimuth
-        orientation_parameters
-        nominal_volume
-        dip
-        demagnetizing_factor_used
-        holder_susceptibility
-        actual_volume
-        T1
-        F1
-        L1
-        T2
-        F2
-        L2
-        field
-        frequency
-        mean_susceptibility
-        standard_error
-        Ftest
-        F12test
-        F23test
-        mean_susceptibility
-        norming_factor
-        standard_error
-        Ftest
-        F12test
-        F23test
-        principal_suscs
-        a95s
-        principal_susc_errs
-        a95_errs
-        L
-        F
-        P
-        primeP
-        T
-        U
-        Q
-        E
-        vector_data
-        date
+    ``name``, ``program``, ``azimuth``, ``orientation_parameters``
+    ``nominal_volume``, ``dip``, ``demagnetizing_factor_used``
+    ``holder_susceptibility``, ``actual_volume``, ``T1``, ``F1`` ``L1``,
+    ``T2``, ``F2``, ``L2``, ``field``, ``frequency``
+    ``mean_susceptibility``, ``standard_error``, ``Ftest`` ``F12test``,
+    ``F23test``, ``mean_susceptibility`` ``norming_factor``,
+    ``standard_error``, ``Ftest``, ``F12test`` ``F23test``,
+    ``principal_suscs``, ``a95s`` ``principal_susc_errs``, ``a95_errs``,
+    ``L``, ``F``, ``P`` ``primeP``, ``T``, ``U``, ``Q``, ``E``,
+    ``vector_data``, ``date``.
     """
     results = OrderedDict()
 
@@ -400,14 +349,15 @@ def directions_from_asc_tensors(filename, system_header="Geograph"):
     """Calculate principal directions from tensors in an ASC file.
 
     The requested co-ordinate system is specified in the same string format
-    that the ASC file itself uses: "Specimen", "Geograph" "Paleo 1", "Paleo 2",
-    "Tecto 1", or "Tecto 2". If any sample in the file does not have data
-    for the requested co-ordinate system, an exception will be raised.
+    that the ASC file itself uses: ``Specimen``, ``Geograph`` ``Paleo 1``,
+    ``Paleo 2``, ``Tecto 1``, or ``Tecto 2``. If any sample in the file does
+    not have data for the requested co-ordinate system, an exception will be
+    raised.
 
     :param filename: an Agico ASC file to read
     :param system_header: a string specifying the co-ordinate system to use
     :return: an ordered dictionary whose keys are sample names and
-             whose values are PrincipalDirs objects
+             whose values are ``PrincipalDirs`` objects
     """
     asc_data = read_asc(filename)
     result = OrderedDict()
@@ -421,15 +371,15 @@ def directions_from_asc_directions(filename, system_header):
     """Read principal directions from an ASC file.
 
     The requested co-ordinate system is specified in the same string format
-    that the ASC file itself uses: "Specimen", "Geograph" "Paleo 1", "Paleo 2",
-    "Tecto 1", or "Tecto 2". If any sample in the file does not have data
-    for the requested co-ordinate system, it will be omitted from the returned
-    dictionary.
+    that the ASC file itself uses: ``Specimen``, ``Geograph`` ``Paleo 1``,
+    ``Paleo 2``, ``Tecto 1``, or ``Tecto 2``. If any sample in the file does
+    not have data for the requested co-ordinate system, it will be omitted
+    from the returned dictionary.
 
     :param filename: an Agico ASC file to read
     :param system_header: a string specifying the co-ordinate system to use
     :return: an ordered dictionary whose keys are sample names and
-             whose values are PrincipalDirs objects
+             whose values are ``PrincipalDirs`` objects
     """
     # TODO: this could be rewritten to use read_asc.
     dirss = OrderedDict()
@@ -464,8 +414,8 @@ def corrected_anisotropy_factor(ps1, ps2, ps3):
     See Jelínek, 1981, "Characterization of the magnetic fabric of
     rocks" for definition. See also Hrouda, 1982, "Magnetic anisotropy
     of rocks and its application in geology and geophysics". Notation
-    for this parameter is usually $P'$ or $P_j$; in the ASC file it
-    is "'P".
+    for this parameter is usually *P′* or *P*\ :sub:`j`; in the ASC file it
+    is ``'P``.
 
     Arguments are the three principal susceptibilities in descending
     order.
