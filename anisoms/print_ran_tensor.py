@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-"""Read Agico RAN files and print the AMS tensors.
+"""Read Agico RAN files and print their AMS tensors.
 
 The tensors are in the geographic co-ordinate system.
 """

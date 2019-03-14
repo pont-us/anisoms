@@ -336,7 +336,7 @@ def directions_from_ran(filename):
 
     :param filename: an Agico RAN file to read
     :return: an ordered dictionary whose keys are sample names and
-             whose values are PrincipalDirs objects
+             whose values are ``PrincipalDirs`` objects
     """
     headers, samples = read_ran(filename)
     result = OrderedDict()
@@ -409,7 +409,7 @@ def directions_from_asc_directions(filename, system_header):
 
 
 def corrected_anisotropy_factor(ps1, ps2, ps3):
-    """Calculate the corrected anisotropy factor (P' or Pj)
+    """Calculate the corrected anisotropy factor (*P′* or *P*\ :sub:`j`)
 
     See Jelínek, 1981, "Characterization of the magnetic fabric of
     rocks" for definition. See also Hrouda, 1982, "Magnetic anisotropy
