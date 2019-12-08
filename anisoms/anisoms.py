@@ -3,6 +3,7 @@
 
 """A library to read and manipulate AMS data from AGICO instruments."""
 
+import sys
 import re
 import struct
 from collections import OrderedDict
@@ -39,7 +40,8 @@ class Direction:
 
         If z<0, the co-ordinates will be flipped when creating the
         Direction object."""
-        if z < 0: x, y, z = -x, -y, -z
+        if z < 0:
+            x, y, z = -x, -y, -z
         return Direction((x, y, z))
 
     def project(self, scale=10):
@@ -264,14 +266,14 @@ def read_asc(filename):
                       "Tests for anisotropy"):
             # Only present in SAFYR files
             s["field"], s["frequency"], s["mean_susceptibility"], \
-            s["standard_error"], s["Ftest"], s["F12test"], s["F23test"] = \
+                s["standard_error"], s["Ftest"], s["F12test"], s["F23test"] = \
                 fieldss[i + 2]
             i += 2
         elif line == ("  Mean         Norming    Standard              "
                       "Tests for anisotropy"):
             # Only present in SUSAR files
             s["mean_susceptibility"], s["norming_factor"], \
-            s["standard_error"], s["Ftest"], s["F12test"], s["F23test"] = \
+                s["standard_error"], s["Ftest"], s["F12test"], s["F23test"] = \
                 fieldss[i + 2]
             i += 2
         elif line == ("          susceptibilities                   "
@@ -295,6 +297,8 @@ def read_asc(filename):
             # This line is only present if the sample was measured
             # using 15-position static specimen measurement.
 
+            print("Warning: ignoring 15-position static measurement data",
+                  file=sys.stderr)
             pass  # Not handled yet
 
         elif line == ("       L       F       P      'P           "
@@ -409,12 +413,12 @@ def directions_from_asc_directions(filename, system_header):
 
 
 def corrected_anisotropy_factor(ps1, ps2, ps3):
-    """Calculate the corrected anisotropy factor (*P′* or *P*\ :sub:`j`)
+    """Calculate the corrected anisotropy factor (*P′* or *P*\\ :sub:`j`)
 
     See Jelínek, 1981, "Characterization of the magnetic fabric of
     rocks" for definition. See also Hrouda, 1982, "Magnetic anisotropy
     of rocks and its application in geology and geophysics". Notation
-    for this parameter is usually *P′* or *P*\ :sub:`j`; in the ASC file it
+    for this parameter is usually *P′* or *P*\\ :sub:`j`; in the ASC file it
     is ``'P``.
 
     Arguments are the three principal susceptibilities in descending
