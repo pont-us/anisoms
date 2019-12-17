@@ -143,6 +143,10 @@ class PrincipalDirs:
         return "%3.3f %3.3f %3.3f %3.3f %3.3f %3.3f" % \
                (di1[0], di1[1], di2[0], di2[1], di3[0], di3[1])
 
+    def to_decinc_tuples(self):
+        """Return a 3-tuple of 2-tuples of declination/inclination pairs"""
+        return self.p1.to_decinc(), self.p2.to_decinc(), self.p3.to_decinc()
+
 
 def read_ran(filename):
     """Read AMS data from a RAN file.
