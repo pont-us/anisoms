@@ -389,30 +389,20 @@ def directions_from_asc_directions(filename, system_header):
     :return: an ordered dictionary whose keys are sample names and
              whose values are ``PrincipalDirs`` objects
     """
-    # TODO: this could be rewritten to use read_asc.
-    dirss = OrderedDict()
-    found_header = False
-    with open(filename, "r") as fh:
-        for line in fh.readlines():
 
-            parts = line.split()
-            if "ANISOTROPY" in parts:
-                sample_name = parts[0]
-            if found_header:
-                found_header = False
-                i1 = float(parts[2])
-                i2 = float(parts[3])
-                i3 = float(parts[4])
-                dirs = PrincipalDirs(
-                    Direction.from_polar_degrees(d1, i1),
-                    Direction.from_polar_degrees(d2, i2),
-                    Direction.from_polar_degrees(d3, i3))
-                dirss[sample_name] = dirs
-            if len(parts) > 0 and parts[0] == system_header:
-                found_header = True
-                d1 = float(parts[2])
-                d2 = float(parts[3])
-                d3 = float(parts[4])
+    raw_data = read_asc(filename)
+    dirss = OrderedDict()
+
+    for sample_name in raw_data.keys():
+        vector_data = raw_data[sample_name]["vector_data"]
+        decs_incs = vector_data[system_header]["directions"]
+        (d1, i1), (d2, i2), (d3, i3) = \
+            tuple((float(d), float(i)) for (d, i) in decs_incs)
+        dirs = PrincipalDirs(
+            Direction.from_polar_degrees(d1, i1),
+            Direction.from_polar_degrees(d2, i2),
+            Direction.from_polar_degrees(d3, i3))
+        dirss[sample_name] = dirs
     return dirss
 
 
