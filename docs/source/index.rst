@@ -8,8 +8,9 @@ anisoms documentation
 
 Anisoms is a Python library for reading AMS (anisotropy of magnetic
 susceptibility) data. Further information is provided in the README file.
-This documentation set provides the :doc:`API documentation for the
-anisoms module <../anisoms>`.
+This documentation set contains the :doc:`API documentation for the
+anisoms module <../anisoms>` and :doc:`descriptions of the command-line
+tools included in the package <../cli-tools>`.
 
 Contents:
 
