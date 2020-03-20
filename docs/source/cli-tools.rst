@@ -4,7 +4,7 @@ anisoms CLI tools
 ams-plot
 --------
 
-::
+.. code-block:: text
 
     usage: ams-plot [-h] [-a ASCFILE] [-r RANFILE] [-c {s,g,p1,t1,p2,t2}]
                     [-d {p,t}] [-v]
@@ -33,7 +33,7 @@ ams-plot
 ams-asc-to-csv
 --------------
 
-::
+.. code-block:: text
 
     usage: ams-asc-to-csv [-h] [-f] input_file output_file
     
@@ -51,7 +51,7 @@ ams-asc-to-csv
 ams-print-ran-tensor
 --------------------
 
-::
+.. code-block:: text
 
     usage: ams-print-ran-tensor [-h] ranfile [ranfile ...]
     
@@ -67,7 +67,7 @@ ams-print-ran-tensor
 ams-tensor-to-dir
 -----------------
 
-::
+.. code-block:: text
 
     usage: ams-tensor-to-dir [-h] [file [file ...]]
     
@@ -84,7 +84,7 @@ ams-tensor-to-dir
 ams-params-from-asc
 -------------------
 
-::
+.. code-block:: text
 
     usage: ams-params-from-asc [-h] [--param parameter-name]
                                [--system coordinate-system]
