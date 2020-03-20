@@ -11,6 +11,9 @@ Python dictionaries. As well as the main library `anisoms`, the package also
 contains a few short command-line scripts. These scripts demonstrate the usage
 of the anisoms API, as well as being potentially useful in their own right.
 
+Documentation for anisoms is available on
+[readthedocs](https://anisoms.readthedocs.io/en/latest/).
+
 ## AMS file formats
 
 The file formats are described in more detail in user manuals for
@@ -33,8 +36,9 @@ systems which were specified during measurement.
 
 ## anisoms usage
 
-This is a brief overview; the API is fully detailed by the docstrings in the
-source code.
+This is a brief overview; the API is fully detailed by the docstrings in
+the source code and
+[on readthedocs](https://anisoms.readthedocs.io/en/latest/anisoms.html).
 
 The functions `read_ran` and `read_asc` read a file of the respective types
 and return a nested dictionary structure containing the data from the file.
@@ -63,8 +67,9 @@ factor (*P′* or *P*<sub>j</sub>) (Jelínek, 1981; Hrouda, 1982).
 - `ams-print-ran-tensor` reads RAN files and prints their AMS tensors.
 - `ams-tensor-to-dir` prints the first principal directions of supplied tensors.
 
-More detailed documentation for the scripts is available in their docstrings
-and in their output when run with a `--help` argument.
+More detailed documentation for the scripts is available in their
+docstrings, in their output when run with a `--help` argument, and
+[on readthedocs](https://anisoms.readthedocs.io/en/latest/cli-tools.html).
 
 ## Precision considerations
 
@@ -87,7 +92,6 @@ ASC file are presumably calculated directly from the full-precision floats.
 Calculating principal directions from the GED tensor is still more precise
 than reading the directions from the ASC file, since the latter are rounded to
 the nearest degree.
-
 
 ## License
 
