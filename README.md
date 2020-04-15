@@ -14,6 +14,13 @@ of the anisoms API, as well as being potentially useful in their own right.
 Documentation for anisoms is available on
 [readthedocs](https://anisoms.readthedocs.io/en/latest/).
 
+## Installation
+
+anisoms may be installed from [PyPI](https://pypi.org/project/anisoms/)
+with `pip3 install anisoms`, or from a local copy of the anisoms source
+repository by executing `pip3 install <PATH>`, where `<PATH>` is the path
+to the repository directory.
+
 ## AMS file formats
 
 The file formats are described in more detail in user manuals for
@@ -95,7 +102,8 @@ the nearest degree.
 
 ## License
 
-Copyright 2019 Pontus Lurcock; released under the [GNU General Public License,
+Copyright 2019-2020 Pontus Lurcock; released under the
+[GNU General Public License,
 version 3.0](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 ## References

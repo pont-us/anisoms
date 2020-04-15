@@ -10,7 +10,7 @@ with open(os.path.join(cwd, "README.md")) as fh:
 
 setup(
     name="anisoms",
-    version="0.0.0",
+    version="1.0.0",
     author="Pontus Lurcock",
     author_email="pont@talvi.net",
     description="Read AMS (anisotropy of magnetic susceptibility) data",
